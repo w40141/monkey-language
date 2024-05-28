@@ -46,3 +46,54 @@ func TestNew(t *testing.T) {
 		}
 	}
 }
+
+func TestLookupIdent(t *testing.T) {
+	tests := []struct {
+		input string
+		want  Type
+	}{
+		{
+			input: "fn",
+			want:  FUNCTION,
+		},
+		{
+			input: "let",
+			want:  LET,
+		},
+		// {
+		// 	input:  "true",
+		// 	want: TRUE,
+		// },
+		// {
+		// 	input:  "false",
+		// 	want: FALSE,
+		// },
+		// {
+		// 	input:  "if",
+		// 	want: IF,
+		// },
+		// {
+		// 	input:  "else",
+		// 	want: ELSE,
+		// },
+		// {
+		// 	input:  "return",
+		// 	want: RETURN,
+		// },
+		{
+			input: "foobar",
+			want:  IDENT,
+		},
+	}
+	for i, tt := range tests {
+		ident := LookupIdent(tt.input)
+		if ident != tt.want {
+			t.Fatalf(
+				"tests[%d] - token wrong. expected=%+v, got=%+v",
+				i,
+				tt.want,
+				ident,
+			)
+		}
+	}
+}

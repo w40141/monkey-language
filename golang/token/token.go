@@ -22,6 +22,8 @@ const (
 	TIMES = "*"
 	// DIVIDE represents division operator.
 	DIVIDE = "/"
+	// BANG represents bang operator.
+	BANG = "!"
 
 	// COMMA represents comma.
 	COMMA = ","
@@ -36,11 +38,30 @@ const (
 	LBRACE = "{"
 	// RBRACE represents right brace.
 	RBRACE = "}"
+	// LT represents less than.
+	LT = "<"
+	// GT represents greater than.
+	GT = ">"
 
 	// FUNCTION represents function keyword.
 	FUNCTION = "FUNCTION"
 	// LET represents let keyword.
 	LET = "LET"
+	// TRUE represents true keyword.
+	TRUE = "TRUE"
+	// FALSE represents false keyword.
+	FALSE = "FALSE"
+	// IF represents if keyword.
+	IF = "IF"
+	// ELSE represents else keyword.
+	ELSE = "ELSE"
+	// RETURN represents return keyword.
+	RETURN = "RETURN"
+
+	// EQ represents equal operator.
+	EQ = "=="
+	// NQ represents not equal operator.
+	NQ = "!="
 )
 
 // Type is the type of token.
@@ -58,8 +79,13 @@ func New(tokenType Type, ch byte) Token {
 }
 
 var keywords = map[string]Type{
-	"fn":  FUNCTION,
-	"let": LET,
+	"fn":     FUNCTION,
+	"let":    LET,
+	"true":   TRUE,
+	"false":  FALSE,
+	"if":     IF,
+	"else":   ELSE,
+	"return": RETURN,
 }
 
 // LookupIdent returns the token type of the given identifier.
