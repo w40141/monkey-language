@@ -9,10 +9,12 @@ func TestNew(t *testing.T) {
 	}
 
 	tests := []struct {
+		name  string
 		input inputs
 		want  Token
 	}{
 		{
+			name: "ASSIGN token",
 			input: inputs{
 				tokenType: ASSIGN,
 				ch:        '=',
@@ -23,6 +25,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
+			name: "SEMICOLON token",
 			input: inputs{
 				tokenType: PLUS,
 				ch:        '+',
@@ -34,12 +37,12 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	for i, tt := range tests {
+	for _, tt := range tests {
 		tok := New(tt.input.tokenType, tt.input.ch)
 		if tok != tt.want {
 			t.Fatalf(
-				"tests[%d] - token wrong. expected=%+v, got=%+v",
-				i,
+				"name: %s - token wrong. expected=%+v, got=%+v",
+				tt.name,
 				tt.want,
 				tok,
 			)
@@ -49,48 +52,57 @@ func TestNew(t *testing.T) {
 
 func TestLookupIdent(t *testing.T) {
 	tests := []struct {
+		name  string
 		input string
 		want  Type
 	}{
 		{
+			name:  "Function",
 			input: "fn",
 			want:  FUNCTION,
 		},
 		{
+			name:  "Let",
 			input: "let",
 			want:  LET,
 		},
-		// {
-		// 	input:  "true",
-		// 	want: TRUE,
-		// },
-		// {
-		// 	input:  "false",
-		// 	want: FALSE,
-		// },
-		// {
-		// 	input:  "if",
-		// 	want: IF,
-		// },
-		// {
-		// 	input:  "else",
-		// 	want: ELSE,
-		// },
-		// {
-		// 	input:  "return",
-		// 	want: RETURN,
-		// },
 		{
+			name:  "True",
+			input: "true",
+			want:  TRUE,
+		},
+		{
+			name:  "False",
+			input: "false",
+			want:  FALSE,
+		},
+		{
+			name:  "If",
+			input: "if",
+			want:  IF,
+		},
+		{
+			name:  "Else",
+			input: "else",
+			want:  ELSE,
+		},
+		{
+			name:  "Return",
+			input: "return",
+			want:  RETURN,
+		},
+		{
+			name:  "Ident",
 			input: "foobar",
 			want:  IDENT,
 		},
 	}
-	for i, tt := range tests {
+	for _, tt := range tests {
 		ident := LookupIdent(tt.input)
 		if ident != tt.want {
 			t.Fatalf(
-				"tests[%d] - token wrong. expected=%+v, got=%+v",
-				i,
+				"name: %s - token wrong. expected=%+v, got=%+v",
+				tt.name,
 				tt.want,
 				ident,
 			)
