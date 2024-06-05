@@ -7,6 +7,96 @@ import (
 	"github.com/w40141/monkey-language/golang/lexer"
 )
 
+func TestIntegerLiteralExpression(t *testing.T) {
+	type want struct {
+		length  int
+		value   int64
+		literal string
+	}
+	tests := []struct {
+		input string
+		want  want
+	}{
+		{
+			input: "5;",
+			want: want{
+				length:  1,
+				value:   5,
+				literal: "5",
+			},
+		},
+	}
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		prg := p.ParseProgram()
+		checkParserErrors(t, p)
+		if l := len(prg.Statements); l != tt.want.length {
+			t.Fatalf("len(prg.Statements) is not %d. got=%d", tt.want.length, l)
+		}
+
+		stmt, ok := prg.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("s not *ast.ExpressionStatement. got=%T", prg.Statements[0])
+		}
+
+		literal, ok := stmt.Expression.(*ast.IntegerLiteral)
+		if !ok {
+			t.Fatalf("exp not *ast.Identifier. got=%T", stmt.Expression)
+		}
+		if literal.Value != tt.want.value {
+			t.Errorf("literal.Value not %d. got=%d", tt.want.value, literal.Value)
+		}
+		if tl := literal.TokenLiteral(); tl != tt.want.literal {
+			t.Errorf("idnt.TokenLiteral() not %s. got=%s", tt.want.literal, tl)
+		}
+	}
+}
+
+func TestIdentifierExpression(t *testing.T) {
+	type want struct {
+		length int
+		value  string
+	}
+	tests := []struct {
+		input string
+		want  want
+	}{
+		{
+			input: "foobar;",
+			want: want{
+				length: 1,
+				value:  "foobar",
+			},
+		},
+	}
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		prg := p.ParseProgram()
+		checkParserErrors(t, p)
+		if l := len(prg.Statements); l != tt.want.length {
+			t.Fatalf("len(prg.Statements) is not %d. got=%d", tt.want.length, l)
+		}
+
+		stmt, ok := prg.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("s not *ast.ExpressionStatement. got=%T", prg.Statements[0])
+		}
+
+		idnt, ok := stmt.Expression.(*ast.Identifier)
+		if !ok {
+			t.Fatalf("exp not *ast.Identifier. got=%T", stmt.Expression)
+		}
+		if idnt.Value != tt.want.value {
+			t.Errorf("idnt.Value not %s. got=%s", tt.want.value, idnt.Value)
+		}
+		if tl := idnt.TokenLiteral(); tl != tt.want.value {
+			t.Errorf("idnt.TokenLiteral() not %s. got=%s", tt.want.value, tl)
+		}
+	}
+}
+
 func TestLetStatements(t *testing.T) {
 	type want struct {
 		length      int

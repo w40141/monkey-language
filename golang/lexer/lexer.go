@@ -16,13 +16,6 @@ type Lexer struct {
 	ch byte
 }
 
-// New returns a new instance of Lexer.
-func New(input string) *Lexer {
-	l := Lexer{input: input}
-	l.readChar()
-	return &l
-}
-
 func (l *Lexer) readChar() {
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
@@ -120,14 +113,6 @@ func (l *Lexer) readNumber() string {
 		l.readChar()
 	}
 	return l.input[position:nl.position]
-}
-
-func isLetter(ch byte) bool {
-	return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ch == '_'
-}
-
-func isDigit(ch byte) bool {
-	return '0' <= ch && ch <= '9'
 }
 
 func (l *Lexer) skipWhitespace() {

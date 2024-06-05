@@ -7,44 +7,6 @@ import (
 	"github.com/w40141/monkey-language/golang/token"
 )
 
-func TestNew(t *testing.T) {
-	tests := []struct {
-		input string
-		wants *Lexer
-	}{
-		{
-			input: `=`,
-			wants: &Lexer{
-				input:        "=",
-				position:     0,
-				readPosition: 1,
-				ch:           '=',
-			},
-		},
-		{
-			input: ``,
-			wants: &Lexer{
-				input:        "",
-				position:     0,
-				readPosition: 1,
-				ch:           0,
-			},
-		},
-	}
-
-	for i, tt := range tests {
-		l := New(tt.input)
-		if !reflect.DeepEqual(l, tt.wants) {
-			t.Fatalf(
-				"tests[%d] - lexer wrong. expected=%+v, got=%+v",
-				i,
-				tt.wants,
-				l,
-			)
-		}
-	}
-}
-
 func TestReadChar(t *testing.T) {
 	tests := []struct {
 		input Lexer
@@ -234,31 +196,6 @@ func TestNextToken(t *testing.T) {
 					tok.Literal,
 				)
 			}
-		}
-	}
-}
-
-func TestIsLetter(t *testing.T) {
-	tests := []struct {
-		input byte
-		want  bool
-	}{
-		{'a', true},
-		{'A', true},
-		{'z', true},
-		{'Z', true},
-		{'_', true},
-		{'1', false},
-	}
-
-	for i, tt := range tests {
-		if got := isLetter(tt.input); got != tt.want {
-			t.Fatalf(
-				"tests[%d] - isLetter wrong. expected=%t, got=%t",
-				i,
-				tt.want,
-				got,
-			)
 		}
 	}
 }
