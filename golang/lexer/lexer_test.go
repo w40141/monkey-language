@@ -17,13 +17,13 @@ func TestReadChar(t *testing.T) {
 				input:        "=1",
 				position:     0,
 				readPosition: 1,
-				ch:           '=',
+				nowChar:           '=',
 			},
 			want: Lexer{
 				input:        "=1",
 				position:     1,
 				readPosition: 2,
-				ch:           '1',
+				nowChar:           '1',
 			},
 		},
 		{
@@ -31,13 +31,13 @@ func TestReadChar(t *testing.T) {
 				input:        "=",
 				position:     0,
 				readPosition: 1,
-				ch:           '=',
+				nowChar:           '=',
 			},
 			want: Lexer{
 				input:        "=",
 				position:     1,
 				readPosition: 2,
-				ch:           0,
+				nowChar:           0,
 			},
 		},
 	}
@@ -246,13 +246,13 @@ func TestSkipWhitespace(t *testing.T) {
 				input:        "  =",
 				position:     0,
 				readPosition: 1,
-				ch:           ' ',
+				nowChar:           ' ',
 			},
 			want: Lexer{
 				input:        "  =",
 				position:     2,
 				readPosition: 3,
-				ch:           '=',
+				nowChar:           '=',
 			},
 		},
 		{
@@ -260,13 +260,13 @@ func TestSkipWhitespace(t *testing.T) {
 				input:        `	=`,
 				position:     0,
 				readPosition: 1,
-				ch:           byte('\t'),
+				nowChar:           byte('\t'),
 			},
 			want: Lexer{
 				input:        `	=`,
 				position:     1,
 				readPosition: 2,
-				ch:           '=',
+				nowChar:           '=',
 			},
 		},
 		{
@@ -275,14 +275,14 @@ func TestSkipWhitespace(t *testing.T) {
 =`,
 				position:     0,
 				readPosition: 1,
-				ch:           byte('\n'),
+				nowChar:           byte('\n'),
 			},
 			want: Lexer{
 				input: `
 =`,
 				position:     1,
 				readPosition: 2,
-				ch:           '=',
+				nowChar:           '=',
 			},
 		},
 		{
@@ -290,13 +290,13 @@ func TestSkipWhitespace(t *testing.T) {
 				input:        string(byte('\r')) + `=`,
 				position:     0,
 				readPosition: 1,
-				ch:           byte('\r'),
+				nowChar:           byte('\r'),
 			},
 			want: Lexer{
 				input:        string(byte('\r')) + `=`,
 				position:     1,
 				readPosition: 2,
-				ch:           '=',
+				nowChar:           '=',
 			},
 		},
 	}

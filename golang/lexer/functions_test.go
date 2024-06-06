@@ -16,7 +16,7 @@ func TestNew(t *testing.T) {
 				input:        "=",
 				position:     0,
 				readPosition: 1,
-				ch:           '=',
+				nowChar:           '=',
 			},
 		},
 		{
@@ -25,7 +25,7 @@ func TestNew(t *testing.T) {
 				input:        "",
 				position:     0,
 				readPosition: 1,
-				ch:           0,
+				nowChar:           0,
 			},
 		},
 	}

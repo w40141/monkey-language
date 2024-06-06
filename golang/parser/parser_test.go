@@ -1,11 +1,254 @@
 package parser
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/w40141/monkey-language/golang/ast"
 	"github.com/w40141/monkey-language/golang/lexer"
 )
+
+func TestOperatorPrecedenceParsing(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{
+			"-a * b;",
+			"((-a) * b)",
+		},
+		{
+			"!-a;",
+			"(!(-a))",
+		},
+		{
+			"a + b + c;",
+			"((a + b) + c)",
+		},
+		{
+			"a + b - c;",
+			"((a + b) - c)",
+		},
+		{
+			"a * b * c;",
+			"((a * b) * c)",
+		},
+		{
+			"a * b / c;",
+			"((a * b) / c)",
+		},
+		{
+			"a + b / c;",
+			"(a + (b / c))",
+		},
+		{
+			"a + b * c + d / e - f",
+			"(((a + (b * c)) + (d / e)) - f)",
+		},
+		{
+			"3 + 4; -5 * 5",
+			"(3 + 4)((-5) * 5)",
+		},
+		{
+			"5 > 4 == 3 < 4",
+			"((5 > 4) == (3 < 4))",
+		},
+		{
+			"5 > 4 != 3 < 4",
+			"((5 > 4) != (3 < 4))",
+		},
+		{
+			"3 + 4 * 5 ==  3 * 1 + 4 * 5",
+			"((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+		},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		prg := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if prg.String() != tt.want {
+			t.Errorf("prg.String() is not %q. got=%q", tt.want, prg.String())
+		}
+	}
+}
+
+func TestParsingInfixExpressions(t *testing.T) {
+	type want struct {
+		length   int
+		operator string
+		left     int64
+		right    int64
+	}
+
+	tests := []struct {
+		input string
+		want  want
+	}{
+		{
+			input: "1 + 5;",
+			want: want{
+				length:   1,
+				operator: "+",
+				left:     1,
+				right:    5,
+			},
+		},
+		{
+			input: "1 - 5;",
+			want: want{
+				length:   1,
+				operator: "-",
+				left:     1,
+				right:    5,
+			},
+		},
+		{
+			input: "1 * 5;",
+			want: want{
+				length:   1,
+				operator: "*",
+				left:     1,
+				right:    5,
+			},
+		},
+		{
+			input: "1 / 5;",
+			want: want{
+				length:   1,
+				operator: "/",
+				left:     1,
+				right:    5,
+			},
+		},
+		{
+			input: "1 > 5;",
+			want: want{
+				length:   1,
+				operator: ">",
+				left:     1,
+				right:    5,
+			},
+		},
+		{
+			input: "1 < 5;",
+			want: want{
+				length:   1,
+				operator: "<",
+				left:     1,
+				right:    5,
+			},
+		},
+		{
+			input: "1 == 5;",
+			want: want{
+				length:   1,
+				operator: "==",
+				left:     1,
+				right:    5,
+			},
+		},
+		{
+			input: "1 != 5;",
+			want: want{
+				length:   1,
+				operator: "!=",
+				left:     1,
+				right:    5,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		prg := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if l := len(prg.Statements); l != tt.want.length {
+			t.Fatalf("len(prg.Statements) is not %d. got=%d", tt.want.length, l)
+		}
+
+		stmt, ok := prg.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("s not *ast.ExpressionStatement. got=%T", prg.Statements[0])
+		}
+
+		exp, ok := stmt.Expression.(*ast.InfixExpression)
+		if !ok {
+			t.Fatalf("exp not *ast.InfixExpression. got=%T", stmt.Expression)
+		}
+		if !testIntegerLiteral(t, exp.Left, tt.want.left) {
+			return
+		}
+		if exp.Operator != tt.want.operator {
+			t.Fatalf("exp.Operator is not '%s'. got=%s", tt.want.operator, exp.Operator)
+		}
+		if !testIntegerLiteral(t, exp.Right, tt.want.right) {
+			return
+		}
+	}
+}
+
+func TestParsingPrefixExpressions(t *testing.T) {
+	type want struct {
+		length   int
+		operator string
+		integer  int64
+	}
+
+	tests := []struct {
+		input string
+		want  want
+	}{
+		{
+			input: "-5;",
+			want: want{
+				length:   1,
+				operator: "-",
+				integer:  5,
+			},
+		},
+		{
+			input: "!5;",
+			want: want{
+				length:   1,
+				operator: "!",
+				integer:  5,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		prg := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		if l := len(prg.Statements); l != tt.want.length {
+			t.Fatalf("len(prg.Statements) is not %d. got=%d", tt.want.length, l)
+		}
+
+		stmt, ok := prg.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("s not *ast.ExpressionStatement. got=%T", prg.Statements[0])
+		}
+
+		exp, ok := stmt.Expression.(*ast.PrefixExpression)
+		if !ok {
+			t.Fatalf("exp not *ast.PrefixExpression. got=%T", stmt.Expression)
+		}
+		if exp.Operator != tt.want.operator {
+			t.Fatalf("exp.Operator is not '%s'. got=%s", tt.want.operator, exp.Operator)
+		}
+
+		if !testIntegerLiteral(t, exp.Right, tt.want.integer) {
+			return
+		}
+	}
+}
 
 func TestIntegerLiteralExpression(t *testing.T) {
 	type want struct {
@@ -236,4 +479,24 @@ func TestReturnStatements(t *testing.T) {
 			}
 		}
 	}
+}
+
+func testIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
+	integ, ok := il.(*ast.IntegerLiteral)
+	if !ok {
+		t.Errorf("il not *ast.IntegerLiteral. got=%T", il)
+		return false
+	}
+
+	if integ.Value != value {
+		t.Errorf("integ.Value not %d. got=%d", value, integ.Value)
+		return false
+	}
+
+	if integ.TokenLiteral() != fmt.Sprintf("%d", value) {
+		t.Errorf("integ.TokenLiteral() not %d. got=%s", value, integ.TokenLiteral())
+		return false
+	}
+
+	return true
 }
