@@ -4,20 +4,36 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 
 	"github.com/w40141/monkey-language/golang/lexer"
-	"github.com/w40141/monkey-language/golang/token"
+	"github.com/w40141/monkey-language/golang/parser"
 )
 
-// PROMPT is the repl prompt
-const PROMPT = ">> "
+// prompt is the repl prompt
+const (
+	prompt     = ">> "
+	monkeyFace = `
+            __,__
+   .--.  .-"     "-.  .--.
+  / .. \/  .-. .-.  \/ .. \
+ | |  '|  /   Y   \  |'  | |
+ | \   \  \ 0 | 0 /  /   / |
+  \ '- ,\.-"""""""-./, -' /
+   ''-' /_   ^ ^   _\ '-''
+       |  \._   _./  |
+       \   \ '~' /   /
+        '._ '-=-' _.'
+           '-----'
+`
+)
 
 // Start starts the REPL
-func Start(in io.Reader, _ io.Writer) {
+func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 
 	for {
-		fmt.Print(PROMPT)
+		fmt.Print(prompt)
 		scanned := scanner.Scan()
 		if !scanned {
 			return
@@ -25,9 +41,37 @@ func Start(in io.Reader, _ io.Writer) {
 
 		line := scanner.Text()
 		l := lexer.New(line)
+		p := parser.New(l)
 
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			fmt.Printf("%+v\n", tok)
+		prg := p.ParseProgram()
+		if len(p.Errors()) != 0 {
+			if e := printParserErrors(out, p.Errors()); e != nil {
+				log.Fatal(e)
+			}
+			continue
+		}
+
+		if _, e := io.WriteString(out, prg.String()); e != nil {
+			log.Fatal(e)
+		}
+		if _, e := io.WriteString(out, "\n"); e != nil {
+			log.Fatal(e)
+		}
+
+		// for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
+		// 	fmt.Printf("%+v\n", tok)
+		// }
+	}
+}
+
+func printParserErrors(out io.Writer, errors []string) error {
+	io.WriteString(out, monkeyFace)
+	io.WriteString(out, "Woops! We ran into some monkey business here!\n")
+	io.WriteString(out, " parser errors:\n")
+	for _, msg := range errors {
+		if _, e := io.WriteString(out, "\t"+msg+"\n"); e != nil {
+			return e
 		}
 	}
+	return nil
 }

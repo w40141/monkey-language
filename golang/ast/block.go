@@ -12,14 +12,14 @@ var _ Expression = (*BlockStatement)(nil)
 // BlockStatement represents a block statement in the AST.
 type BlockStatement struct {
 	Token     token.Token
-	Statement []Statement
+	Statements []Statement
 }
 
 // String implements Expression.
 func (b *BlockStatement) String() string {
 	var out bytes.Buffer
 
-	for _, s := range b.Statement {
+	for _, s := range b.Statements {
 		out.WriteString(s.String())
 	}
 
