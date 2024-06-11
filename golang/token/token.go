@@ -11,6 +11,8 @@ const (
 	IDENT = "IDENT"
 	// INT represents integers.
 	INT = "INT"
+	// FLOAT represents floating point numbers.
+	FLOAT = "FLOAT"
 
 	// ASSIGN represents assignment operator.
 	ASSIGN = "="

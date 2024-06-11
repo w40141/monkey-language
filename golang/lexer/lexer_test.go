@@ -17,13 +17,13 @@ func TestReadChar(t *testing.T) {
 				input:        "=1",
 				position:     0,
 				readPosition: 1,
-				nowChar:           '=',
+				nowChar:      '=',
 			},
 			want: Lexer{
 				input:        "=1",
 				position:     1,
 				readPosition: 2,
-				nowChar:           '1',
+				nowChar:      '1',
 			},
 		},
 		{
@@ -31,13 +31,13 @@ func TestReadChar(t *testing.T) {
 				input:        "=",
 				position:     0,
 				readPosition: 1,
-				nowChar:           '=',
+				nowChar:      '=',
 			},
 			want: Lexer{
 				input:        "=",
 				position:     1,
 				readPosition: 2,
-				nowChar:           0,
+				nowChar:      0,
 			},
 		},
 	}
@@ -65,6 +65,12 @@ func TestNextToken(t *testing.T) {
 		input string
 		wants []want
 	}{
+		{
+			input: `#`,
+			wants: []want{
+				{token.ILLEGAL, "#"},
+			},
+		},
 		{
 			input: `=+-*/!,;(){}<>`,
 			wants: []want{
@@ -246,13 +252,13 @@ func TestSkipWhitespace(t *testing.T) {
 				input:        "  =",
 				position:     0,
 				readPosition: 1,
-				nowChar:           ' ',
+				nowChar:      ' ',
 			},
 			want: Lexer{
 				input:        "  =",
 				position:     2,
 				readPosition: 3,
-				nowChar:           '=',
+				nowChar:      '=',
 			},
 		},
 		{
@@ -260,13 +266,13 @@ func TestSkipWhitespace(t *testing.T) {
 				input:        `	=`,
 				position:     0,
 				readPosition: 1,
-				nowChar:           byte('\t'),
+				nowChar:      byte('\t'),
 			},
 			want: Lexer{
 				input:        `	=`,
 				position:     1,
 				readPosition: 2,
-				nowChar:           '=',
+				nowChar:      '=',
 			},
 		},
 		{
@@ -275,14 +281,14 @@ func TestSkipWhitespace(t *testing.T) {
 =`,
 				position:     0,
 				readPosition: 1,
-				nowChar:           byte('\n'),
+				nowChar:      byte('\n'),
 			},
 			want: Lexer{
 				input: `
 =`,
 				position:     1,
 				readPosition: 2,
-				nowChar:           '=',
+				nowChar:      '=',
 			},
 		},
 		{
@@ -290,13 +296,13 @@ func TestSkipWhitespace(t *testing.T) {
 				input:        string(byte('\r')) + `=`,
 				position:     0,
 				readPosition: 1,
-				nowChar:           byte('\r'),
+				nowChar:      byte('\r'),
 			},
 			want: Lexer{
 				input:        string(byte('\r')) + `=`,
 				position:     1,
 				readPosition: 2,
-				nowChar:           '=',
+				nowChar:      '=',
 			},
 		},
 	}
@@ -309,6 +315,51 @@ func TestSkipWhitespace(t *testing.T) {
 				i,
 				tt.want,
 				tt.input,
+			)
+		}
+	}
+}
+
+func TestPeekChar(t *testing.T) {
+	tests := []struct {
+		input Lexer
+		want  byte
+	}{
+		{
+			input: Lexer{
+				input:        "abc",
+				position:     0,
+				readPosition: 1,
+				nowChar:      'a',
+			},
+			want: 'b',
+		},
+		{
+			input: Lexer{
+				input:        "abc",
+				position:     1,
+				readPosition: 2,
+				nowChar:      'b',
+			},
+			want: 'c',
+		},
+		{
+			input: Lexer{
+				input:        "abc",
+				position:     2,
+				readPosition: 3,
+				nowChar:      'c',
+			},
+			want: 0,
+		},
+	}
+	for i, tt := range tests {
+		if got := tt.input.peekChar(); got != tt.want {
+			t.Fatalf(
+				"tests[%d] - peekChar wrong. expected=%q, got=%q",
+				i,
+				tt.want,
+				got,
 			)
 		}
 	}
