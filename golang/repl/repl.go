@@ -1,3 +1,4 @@
+// Package repl implements the Read-Eval-Print-Loop for the Monkey programming language.
 package repl
 
 import (
@@ -6,6 +7,7 @@ import (
 	"io"
 	"log"
 
+	"github.com/w40141/monkey-language/golang/evaluator"
 	"github.com/w40141/monkey-language/golang/lexer"
 	"github.com/w40141/monkey-language/golang/parser"
 )
@@ -51,16 +53,11 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		if _, e := io.WriteString(out, prg.String()); e != nil {
-			log.Fatal(e)
+		evaluated := evaluator.Eval(prg)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
 		}
-		if _, e := io.WriteString(out, "\n"); e != nil {
-			log.Fatal(e)
-		}
-
-		// for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-		// 	fmt.Printf("%+v\n", tok)
-		// }
 	}
 }
 

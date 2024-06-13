@@ -7,9 +7,16 @@ import "fmt"
 type Type string
 
 const (
-	integerObj = "INTEGER"
-	booleanObj = "BOOLEAN"
-	nullObj    = "NULL"
+	// IntegerObj represents the type of an integer object.
+	IntegerObj = "INTEGER"
+	// BooleanObj represents the type of a boolean object.
+	BooleanObj = "BOOLEAN"
+	// NullObj represents the type of a null object.
+	NullObj = "NULL"
+	// ReturnObj represents the type of a return object.
+	ReturnObj = "RETURN"
+	// ErrorObj represents the type of an error object.
+	ErrorObj = "ERROR"
 )
 
 // Object represents an object in the Monkey programming language.
@@ -25,7 +32,7 @@ type Integer struct {
 
 // Type returns the type of the integer object.
 func (i *Integer) Type() Type {
-	return integerObj
+	return IntegerObj
 }
 
 // Inspect returns the string representation of the integer object.
@@ -40,7 +47,7 @@ type Boolean struct {
 
 // Type returns the type of the boolean object.
 func (b *Boolean) Type() Type {
-	return booleanObj
+	return BooleanObj
 }
 
 // Inspect returns the string representation of the boolean object.
@@ -53,10 +60,40 @@ type Null struct{}
 
 // Type returns the type of the null object.
 func (n *Null) Type() Type {
-	return nullObj
+	return NullObj
 }
 
 // Inspect returns the string representation of the null object.
 func (n *Null) Inspect() string {
 	return "null"
+}
+
+// Return represents a return object in the Monkey programming language.
+type Return struct {
+	Value Object
+}
+
+// Type returns the type of the return object.
+func (r *Return) Type() Type {
+	return ReturnObj
+}
+
+// Inspect returns the string representation of the return object.
+func (r *Return) Inspect() string {
+	return r.Value.Inspect()
+}
+
+// Error represents an error object in the Monkey programming language.
+type Error struct {
+	Message string
+}
+
+// Type returns the type of the error object.
+func (e *Error) Type() Type {
+	return ErrorObj
+}
+
+// Inspect returns the string representation of the error object.
+func (e *Error) Inspect() string {
+	return "ERROR: " + e.Message
 }
