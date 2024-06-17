@@ -8,6 +8,84 @@ import (
 	"github.com/w40141/monkey-language/golang/parser"
 )
 
+func TestClosures(t *testing.T)  {
+	input := `
+let newAdder = fn(x) {
+	fn(y) { x + y };
+};
+let addTwo = newAdder(2);
+addTwo(2);`
+	testIntegerObject(t, testEval(input), 4)
+}
+
+func TestFuntionApplication(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let identity = fn(x) { x; }; identity(5);", 5},
+		{"let identity = fn(x) { return x; }; identity(5);", 5},
+		{"let double = fn(x){ 2 * x }; double(5);", 10},
+		{"let add = fn(x, y) { x + y; }; add(5, 5);", 10},
+		{"let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
+		{"fn(x) { x; }(5);", 5},
+	}
+
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+}
+
+func TestFunctionObject(t *testing.T) {
+	type want struct {
+		length int
+		body   string
+		params []string
+	}
+	tests := []struct {
+		input string
+		want  want
+	}{
+		{
+			input: "fn(x) { x + 2; };",
+			want: want{
+				1,
+				"(x + 2)",
+				[]string{"x"},
+			},
+		},
+		{
+			input: "fn(x, y) { x + y + 2; };",
+			want: want{
+				2,
+				"((x + y) + 2)",
+				[]string{"x", "y"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		fn, ok := evaluated.(*object.Function)
+		if !ok {
+			t.Fatalf("object is not Function. got=%T (%+v)", evaluated, evaluated)
+		}
+
+		if len(fn.Parameters) != tt.want.length {
+			t.Fatalf("function has wrong parameters. Parameters=%+v", fn.Parameters)
+		}
+
+		for i, param := range tt.want.params {
+			if fn.Parameters[i].String() != param {
+				t.Fatalf("parameter is not 'x'. got=%q", fn.Parameters[i])
+			}
+		}
+
+		if fn.Body.String() != tt.want.body {
+			t.Fatalf("body is not %s. got=%q", tt.want.body, fn.Body.String())
+		}
+	}
+}
+
 func TestLetStatements(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -175,7 +253,8 @@ func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
 	pgm := p.ParseProgram()
-	return Eval(pgm)
+	env := object.NewEnvironment()
+	return Eval(pgm, env)
 }
 
 func testIntegerObject(t *testing.T, obj object.Object, expected int64) bool {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/w40141/monkey-language/golang/evaluator"
 	"github.com/w40141/monkey-language/golang/lexer"
+	"github.com/w40141/monkey-language/golang/object"
 	"github.com/w40141/monkey-language/golang/parser"
 )
 
@@ -33,6 +34,7 @@ const (
 // Start starts the REPL
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnvironment()
 
 	for {
 		fmt.Print(prompt)
@@ -53,7 +55,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		evaluated := evaluator.Eval(prg)
+		evaluated := evaluator.Eval(prg, env)
 		if evaluated != nil {
 			io.WriteString(out, evaluated.Inspect())
 			io.WriteString(out, "\n")

@@ -1,7 +1,13 @@
 // Package object defines the object system used in the Monkey programming language.
 package object
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"strings"
+
+	"github.com/w40141/monkey-language/golang/ast"
+)
 
 // Type represents the type of an object.
 type Type string
@@ -17,6 +23,8 @@ const (
 	ReturnObj = "RETURN"
 	// ErrorObj represents the type of an error object.
 	ErrorObj = "ERROR"
+	// FunctionObj represents the type of a function object.
+	FunctionObj = "FUNCTION"
 )
 
 // Object represents an object in the Monkey programming language.
@@ -96,4 +104,35 @@ func (e *Error) Type() Type {
 // Inspect returns the string representation of the error object.
 func (e *Error) Inspect() string {
 	return "ERROR: " + e.Message
+}
+
+// Function represents a function object in the Monkey programming language.
+type Function struct {
+	Parameters []*ast.Identifier
+	Body       *ast.BlockStatement
+	Env        *Environment
+}
+
+// Type returns the type of the function object.
+func (f *Function) Type() Type {
+	return FunctionObj
+}
+
+// Inspect returns the string representation of the function object.
+func (f *Function) Inspect() string {
+	var out bytes.Buffer
+
+	params := []string{}
+	for _, p := range f.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString("fn")
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") {\n")
+	out.WriteString(f.Body.String())
+	out.WriteString("\n}")
+
+	return out.String()
 }
