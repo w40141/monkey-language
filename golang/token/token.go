@@ -13,6 +13,8 @@ const (
 	INT = "INT"
 	// FLOAT represents floating point numbers.
 	FLOAT = "FLOAT"
+	// STRING represents strings.
+	STRING = "STRING"
 
 	// ASSIGN represents assignment operator.
 	ASSIGN = "="
@@ -40,6 +42,10 @@ const (
 	LBRACE = "{"
 	// RBRACE represents right brace.
 	RBRACE = "}"
+	// LBRACKET represents left bracket.
+	LBRACKET = "["
+	// RBRACKET represents right bracket.
+	RBRACKET = "]"
 	// LT represents less than.
 	LT = "<"
 	// GT represents greater than.

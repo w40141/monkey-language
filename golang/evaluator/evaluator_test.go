@@ -8,7 +8,103 @@ import (
 	"github.com/w40141/monkey-language/golang/parser"
 )
 
-func TestClosures(t *testing.T)  {
+func TestArrayIndexExpressions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected any
+	}{
+		{input: "[1, 2, 3][0]", expected: 1},
+		{input: "[1, 2, 3][1]", expected: 2},
+		{input: "[1, 2, 3][2]", expected: 3},
+		{input: "let i = 0; [1][i];", expected: 1},
+		{input: "[1, 2, 3][1 + 1]", expected: 3},
+		{input: "let myArray = [1, 2, 3]; myArray[2];", expected: 3},
+		{input: "let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", expected: 6},
+		{input: "let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", expected: 2},
+		{input: "[1, 2, 3][3]", expected: nil},
+		{input: "[1, 2, 3][-1]", expected: nil},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		integer, ok := tt.expected.(int)
+		if ok {
+			testIntegerObject(t, evaluated, int64(integer))
+		} else {
+			testNullObject(t, evaluated)
+		}
+	}
+}
+
+func TestArrayLiterals(t *testing.T) {
+	input := "[1, 2 * 2, 3 + 3]"
+	evaluated := testEval(input)
+	result, ok := evaluated.(*object.Array)
+	if !ok {
+		t.Fatalf("object is not Array. got=%T (%+v)", evaluated, evaluated)
+	}
+	if len(result.Elems) != 3 {
+		t.Fatalf("array has wrong number of elements. got=%d", len(result.Elems))
+	}
+	testIntegerObject(t, result.Elems[0], 1)
+	testIntegerObject(t, result.Elems[1], 4)
+	testIntegerObject(t, result.Elems[2], 6)
+}
+
+func TestBuildinFunctions(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected any
+	}{
+		{input: `len("")`, expected: 0},
+		{input: `len("four")`, expected: 4},
+		{input: `len("hello world")`, expected: 11},
+		{input: `len(1)`, expected: "argument to `len` not supported, got INTEGER"},
+		{input: `len("one", "two"),`, expected: "wrong number of arguments. got=2, want=1"},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		switch expected := tt.expected.(type) {
+		case int:
+			testIntegerObject(t, evaluated, int64(expected))
+		case string:
+			err, ok := evaluated.(*object.Error)
+			if !ok {
+				t.Errorf("object is not Error. got=%T (%(+v))", evaluated, evaluated)
+			}
+			if err.Message != expected {
+				t.Errorf("wrong error message. expected=%q, got=%q", expected, err.Message)
+			}
+		}
+	}
+}
+
+func TestStringConcatenation(t *testing.T) {
+	input := `"Hello" + " " + "World!"`
+	evaluated := testEval(input)
+	str, ok := evaluated.(*object.String)
+	if !ok {
+		t.Fatalf("object is not String. got=%T (%+v)", evaluated, evaluated)
+	}
+	if str.Value != "Hello World!" {
+		t.Errorf("String has wrong value. got=%q", str.Value)
+	}
+}
+
+func TestStringLiteral(t *testing.T) {
+	input := `"Hello World!"`
+	evaluated := testEval(input)
+	str, ok := evaluated.(*object.String)
+	if !ok {
+		t.Fatalf("object is not String. got=%T (%+v)", evaluated, evaluated)
+	}
+	if str.Value != "Hello World!" {
+		t.Errorf("String has wrong value. got=%q", str.Value)
+	}
+}
+
+func TestClosures(t *testing.T) {
 	input := `
 let newAdder = fn(x) {
 	fn(y) { x + y };
@@ -234,6 +330,7 @@ func TestErrorHanding(t *testing.T) {
 		{"5; true + false; 5", "unknown operator: BOOLEAN + BOOLEAN"},
 		{"if (10 > 1) { true + false; }", "unknown operator: BOOLEAN + BOOLEAN"},
 		{"foobar", "identifier not found: foobar"},
+		{`"foobar" - "sss"`, "unknown operator: STRING - STRING"},
 	}
 
 	for _, tt := range tests {

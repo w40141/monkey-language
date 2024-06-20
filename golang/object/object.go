@@ -9,8 +9,12 @@ import (
 	"github.com/w40141/monkey-language/golang/ast"
 )
 
-// Type represents the type of an object.
-type Type string
+type (
+	// Type represents the type of an object.
+	Type string
+	// BuiltinFunction is the type of a built-in function.
+	BuiltinFunction func(args ...Object) Object
+)
 
 const (
 	// IntegerObj represents the type of an integer object.
@@ -25,6 +29,12 @@ const (
 	ErrorObj = "ERROR"
 	// FunctionObj represents the type of a function object.
 	FunctionObj = "FUNCTION"
+	// StringObj represents the type of a string object.
+	StringObj = "STRING"
+	// BuiltinObj represents the type of a builtin object.
+	BuiltinObj = "BUILTIN"
+	// ArrayObj represents the type of an array object.
+	ArrayObj = "ARRAY"
 )
 
 // Object represents an object in the Monkey programming language.
@@ -32,6 +42,8 @@ type Object interface {
 	Type() Type
 	Inspect() string
 }
+
+var _ Object = (*Integer)(nil)
 
 // Integer represents an integer object in the Monkey programming language.
 type Integer struct {
@@ -48,6 +60,8 @@ func (i *Integer) Inspect() string {
 	return fmt.Sprintf("%d", i.Value)
 }
 
+var _ Object = (*Boolean)(nil)
+
 // Boolean represents a boolean object in the Monkey programming language.
 type Boolean struct {
 	Value bool
@@ -63,6 +77,8 @@ func (b *Boolean) Inspect() string {
 	return fmt.Sprintf("%t", b.Value)
 }
 
+var _ Object = (*Null)(nil)
+
 // Null represents a null object in the Monkey programming language.
 type Null struct{}
 
@@ -75,6 +91,8 @@ func (n *Null) Type() Type {
 func (n *Null) Inspect() string {
 	return "null"
 }
+
+var _ Object = (*Return)(nil)
 
 // Return represents a return object in the Monkey programming language.
 type Return struct {
@@ -91,6 +109,8 @@ func (r *Return) Inspect() string {
 	return r.Value.Inspect()
 }
 
+var _ Object = (*Error)(nil)
+
 // Error represents an error object in the Monkey programming language.
 type Error struct {
 	Message string
@@ -105,6 +125,8 @@ func (e *Error) Type() Type {
 func (e *Error) Inspect() string {
 	return "ERROR: " + e.Message
 }
+
+var _ Object = (*Function)(nil)
 
 // Function represents a function object in the Monkey programming language.
 type Function struct {
@@ -135,4 +157,66 @@ func (f *Function) Inspect() string {
 	out.WriteString("\n}")
 
 	return out.String()
+}
+
+var _ Object = (*String)(nil)
+
+// String represents a string object in the Monkey programming language.
+type String struct {
+	Value string
+}
+
+// Inspect implements Object.
+func (s *String) Inspect() string {
+	return s.Value
+}
+
+// Type implements Object.
+func (s *String) Type() Type {
+	return StringObj
+}
+
+var _ Object = (*Builtin)(nil)
+
+// Builtin represents a built-in function object in the Monkey programming language.
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+// Inspect implements Object.
+func (b *Builtin) Inspect() string {
+	return "builtin function"
+}
+
+// Type implements Object.
+func (b *Builtin) Type() Type {
+	return BuiltinObj
+}
+
+var _ Object = (*Array)(nil)
+
+// Array represents an array object in the Monkey programming language.
+type Array struct {
+	Elems []Object
+}
+
+// Inspect implements Object.
+func (a *Array) Inspect() string {
+	var out bytes.Buffer
+
+	elems := []string{}
+	for _, e := range a.Elems {
+		elems = append(elems, e.Inspect())
+	}
+
+	out.WriteString("[")
+	out.WriteString(strings.Join(elems, ", "))
+	out.WriteString("]")
+
+	return out.String()
+}
+
+// Type implements Object.
+func (a *Array) Type() Type {
+	return ArrayObj
 }

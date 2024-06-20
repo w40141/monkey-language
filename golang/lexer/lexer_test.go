@@ -66,6 +66,17 @@ func TestNextToken(t *testing.T) {
 		wants []want
 	}{
 		{
+			input: `
+			"foobar"
+			"foo bar"
+			`,
+			wants: []want{
+				{token.STRING, "foobar"},
+				{token.STRING, "foo bar"},
+				{token.EOF, ""},
+			},
+		},
+		{
 			input: `#`,
 			wants: []want{
 				{token.ILLEGAL, "#"},
@@ -176,6 +187,17 @@ func TestNextToken(t *testing.T) {
 			wants: []want{
 				{token.EQ, "=="},
 				{token.NQ, "!="},
+				{token.EOF, ""},
+			},
+		},
+		{
+			input: `[1, 2]`,
+			wants: []want{
+				{token.LBRACKET, "["},
+				{token.INT, "1"},
+				{token.COMMA, ","},
+				{token.INT, "2"},
+				{token.RBRACKET, "]"},
 				{token.EOF, ""},
 			},
 		},
