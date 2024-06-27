@@ -29,6 +29,18 @@ var builtins = map[string]*object.Builtin{
 			return pushBuiltin(args...)
 		},
 	},
+	"puts": {
+		Fn: func(args ...object.Object) object.Object {
+			return putsBuiltin(args...)
+		},
+	},
+}
+
+func putsBuiltin(args ...object.Object) object.Object {
+	for _, arg := range args {
+		println(arg.Inspect())
+	}
+	return nullObj
 }
 
 func pushBuiltin(args ...object.Object) object.Object {
@@ -38,7 +50,7 @@ func pushBuiltin(args ...object.Object) object.Object {
 	if args[0].Type() != object.ArrayObj {
 		return newError("argument to `tail` must be ARRAY, got %s", args[0].Type())
 	}
-	arr:= args[0].(*object.Array)
+	arr := args[0].(*object.Array)
 	length := len(arr.Elems)
 
 	newElems := make([]object.Object, length+1)

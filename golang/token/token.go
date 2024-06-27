@@ -33,6 +33,8 @@ const (
 	COMMA = ","
 	// SEMICOLON represents semicolon.
 	SEMICOLON = ";"
+	// COLON represents colon.
+	COLON = ":"
 
 	// LPARAN represents left parenthesis.
 	LPARAN = "("

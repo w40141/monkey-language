@@ -8,6 +8,89 @@ import (
 	"github.com/w40141/monkey-language/golang/lexer"
 )
 
+func TestParsingHashLiteral(t *testing.T) {
+	type want struct {
+		length   int
+		expected map[string]func(ast.Expression)
+	}
+	tests := []struct {
+		input string
+		want  want
+	}{
+		{
+			input: `{"one": 1, "two": 2, "three": 3}`,
+			want: want{
+				length: 3,
+				expected: map[string]func(ast.Expression){
+					"one": func(e ast.Expression) {
+						testIntegerLiteral(t, e, 1)
+					},
+					"two": func(e ast.Expression) {
+						testIntegerLiteral(t, e, 2)
+					},
+					"three": func(e ast.Expression) {
+						testIntegerLiteral(t, e, 3)
+					},
+				},
+			},
+		},
+		{
+			input: "{}",
+			want: want{
+				length:   0,
+				expected: map[string]func(ast.Expression){},
+			},
+		},
+		{
+			input: `{"one": 0 + 1, "two": 10 - 8, "three": 15 / 5}`,
+			want: want{
+				length: 3,
+				expected: map[string]func(ast.Expression){
+					"one": func(e ast.Expression) {
+						testInfixExpression(t, e, 0, "+", 1)
+					},
+					"two": func(e ast.Expression) {
+						testInfixExpression(t, e, 10, "-", 8)
+					},
+					"three": func(e ast.Expression) {
+						testInfixExpression(t, e, 15, "/", 5)
+					},
+				},
+			},
+		},
+	}
+
+	for i, tt := range tests {
+		prg := parseProgram(t, tt.input)
+
+		stmt, ok := prg.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf(
+				"number: %d, program.Statements[0] is not ast.ExpressionStatement. got=%T",
+				i, prg.Statements[0],
+			)
+		}
+
+		hash, ok := stmt.Expression.(*ast.HashLiteral)
+		if !ok {
+			t.Fatalf("number: %d, exp not *ast.HashLiteral. got=%T", i, stmt.Expression)
+		}
+
+		if length := len(hash.Pairs); length != tt.want.length {
+			t.Fatalf("number: %d, len(hash.Pairs) not 3. got=%d", i, length)
+		}
+
+		for key, value := range hash.Pairs {
+			literal, ok := key.(*ast.StringLiteral)
+			if !ok {
+				t.Errorf("key is not ast.StringLiteral. got=%T", key)
+			}
+			testFunc := tt.want.expected[literal.String()]
+			testFunc(value)
+		}
+	}
+}
+
 func TestParsingIndexExpression(t *testing.T) {
 	input := "myArray[1 + 1]"
 	prg := parseProgram(t, input)

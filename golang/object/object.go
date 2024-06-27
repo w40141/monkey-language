@@ -4,6 +4,7 @@ package object
 import (
 	"bytes"
 	"fmt"
+	"hash/fnv"
 	"strings"
 
 	"github.com/w40141/monkey-language/golang/ast"
@@ -35,6 +36,8 @@ const (
 	BuiltinObj = "BUILTIN"
 	// ArrayObj represents the type of an array object.
 	ArrayObj = "ARRAY"
+	// HashObj represents the type of a hash object.
+	HashObj = "HASH"
 )
 
 // Object represents an object in the Monkey programming language.
@@ -219,4 +222,72 @@ func (a *Array) Inspect() string {
 // Type implements Object.
 func (a *Array) Type() Type {
 	return ArrayObj
+}
+
+// HashPair represents a key-value pair in a hash object.
+type HashPair struct {
+	Key   Object
+	Value Object
+}
+
+var _ Object = (*Hash)(nil)
+
+// Hash represents a hash object in the Monkey programming language.
+type Hash struct {
+	Pairs map[HashKey]HashPair
+}
+
+// Inspect implements Object.
+func (h *Hash) Inspect() string {
+	var out bytes.Buffer
+
+	pairs := []string{}
+	for _, pair := range h.Pairs {
+		pairs = append(pairs, fmt.Sprintf("%s: %s", pair.Key.Inspect(), pair.Value.Inspect()))
+	}
+
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
+
+	return out.String()
+}
+
+// Type implements Object.
+func (h *Hash) Type() Type {
+	return HashObj
+}
+
+// Hashable represents
+type Hashable interface {
+	HashKey() HashKey
+}
+
+// HashKey represents a hash key in the Monkey programming language.
+type HashKey struct {
+	Type  Type
+	Value uint64
+}
+
+// HashKey represents a hash key in the Monkey programming language.
+func (b Boolean) HashKey() HashKey {
+	var value uint64
+	if b.Value {
+		value = 1
+	} else {
+		value = 0
+	}
+	return HashKey{Type: b.Type(), Value: value}
+}
+
+// HashKey represents a hash key in the Monkey programming language.
+func (i Integer) HashKey() HashKey {
+	return HashKey{Type: i.Type(), Value: uint64(i.Value)}
+}
+
+// HashKey represents a hash key in the Monkey programming language.
+func (s String) HashKey() HashKey {
+	h := fnv.New64a()
+	h.Write([]byte(s.Value))
+	return HashKey{Type: s.Type(), Value: h.Sum64()}
 }

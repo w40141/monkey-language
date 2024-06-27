@@ -201,6 +201,17 @@ func TestNextToken(t *testing.T) {
 				{token.EOF, ""},
 			},
 		},
+		{
+			input: `{"foo": "bar"}`,
+			wants: []want{
+				{token.LBRACE, "{"},
+				{token.STRING, "foo"},
+				{token.COLON, ":"},
+				{token.STRING, "bar"},
+				{token.RBRACE, "}"},
+				{token.EOF, ""},
+			},
+		},
 	}
 
 	for i, tt := range tests {
