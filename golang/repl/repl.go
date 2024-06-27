@@ -44,6 +44,10 @@ func Start(in io.Reader, out io.Writer) {
 		}
 
 		line := scanner.Text()
+		if line == "exit" {
+			log.Println("Goodbye!")
+			return
+		}
 		l := lexer.New(line)
 		p := parser.New(l)
 
